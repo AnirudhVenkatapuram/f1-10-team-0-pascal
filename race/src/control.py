@@ -38,7 +38,15 @@ def control(data):
 	#TODO: Use kp, ki & kd to implement a PID controller
 
 	# 1. Scale the error
+	v_theta = kp * data.pid_error + kd * (prev_error - data.pid_error)
 	# 2. Apply the PID equation on error to compute steering
+	angle -= v_theta
+	if angle > 100:
+		angle = 100
+	elif angle < -100:
+		angle = -100
+
+	prev_error = data.pid_error
 
 	# An empty AckermannDrive message is created. You will populate the steering_angle and the speed fields.
 	command = AckermannDrive()

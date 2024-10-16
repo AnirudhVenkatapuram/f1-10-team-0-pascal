@@ -23,7 +23,10 @@ def getRange(data,angle):
     # Outputs length in meters to object with angle in lidar scan field of view
     # Make sure to take care of NaNs etc.
     #TODO: implement
-	return 0.0
+	adjusted_angle = angle + 30
+	k = (adjusted_angle - data.angle_min) / data.angle_increment
+	dist = data.ranges[int(k)]
+	return dist
 
 
 
@@ -34,6 +37,12 @@ def callback(data):
 	a = getRange(data,theta) # obtain the ray distance for theta
 	b = getRange(data,0)	# obtain the ray distance for 0 degrees (i.e. directly to the right of the car)
 	swing = math.radians(theta)
+
+	alpha = math.atan2(a*math.cos(swing) - b, a * math.sin(swing))
+	AB = b * math.cos(alpha)
+	CD = AB + forward_projection * math.sin(alpha)
+
+	error = abs(desired_distance - CD)
 
 	## Your code goes here to determine the projected error as per the alrorithm
 	# Compute Alpha, AB, and CD..and finally the error.
