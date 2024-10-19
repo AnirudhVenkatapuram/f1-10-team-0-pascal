@@ -4,5 +4,4 @@
     </include> 
     <node pkg="race" name="control" type="control.py" />
     <node pkg="race" name="dist_finder" type="dist_finder.py" />
-    <include file="move_base/path/remote_teleop.launch" />
 </launch>
