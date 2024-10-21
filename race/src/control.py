@@ -3,6 +3,7 @@ import math
 import rospy
 from race.msg import pid_input
 from ackermann_msgs.msg import AckermannDrive
+from visualization_msgs.msg import Marker
 
 # PID Control Params
 kp = 0.0 #TODO
@@ -20,10 +21,45 @@ prev_error = 0.0
 # 35: Nice Autonomous Pace
 # > 40: Careful, what you do here. Only use this if your autonomous steering is very reliable.
 vel_input = 0.0	#TODO
+min_speed = 1
 
 # Publisher for moving the car.
 # TODO: Use the coorect topic /car_x/offboard/command. The multiplexer listens to this topic
 command_pub = rospy.Publisher('/car_0/offboard/command', AckermannDrive, queue_size = 1)
+marker_pub = rospy.Publisher('steering_arrow', Marker, queue_size=10)
+
+def create_steering_arrow(x, y, z, yaw):
+	marker = Marker()
+	marker.header.frame_id = 'car_0_laser'
+	marker.header.stamp = rospy.Time.now()
+
+	marker.ns = 'steering_arrow'
+	marker.id = 0
+	marker.type = Marker.ARROW
+	marker.action = Marker.ADD
+
+	marker.pose.position.x = x
+	marker.pose.position.y = y
+	marker.pose.position.z = z
+
+	marker.pose.orientation.x = 0
+	marker.pose.orientation.y = 0
+	marker.pose.orientation.z = yaw
+	marker.pose.orientation.w = 1
+
+	marker.scale.x = 1
+	marker.scale.y = 0.1
+	marker.scale.z = 0.1
+
+	marker.color.r = 1.0
+	marker.color.g = 0
+	marker.color.b = 0
+	marker.color.a = 1
+
+        return marker
+
+def sigmoid(x):
+        return 1 / (1 + math.exp(-x))
 
 def control(data):
 	global prev_error
@@ -49,7 +85,23 @@ def control(data):
 
 	print(angle)
 	prev_error = data.pid_error
+        
+	if abs(angle) <= 3:
+		vel = vel_input
+	
+	elif abs(angle) <=20:
+		vel = 20
+	elif abs(angle) <=40:
+		vel = 10
+	#elif abs(angle) <= 25:
+	#	vel = 20
+	#elif abs(angle) <= 50:
+	#	vel = 15
 
+	else:
+		vel = 3
+	#vel = math.tanh(1 - (abs(angle) / 100)) * (vel_input - min_speed) + min_speed
+	print("Speed:" + str(vel))
 	# An empty AckermannDrive message is created. You will populate the steering_angle and the speed fields.
 	command = AckermannDrive()
 
@@ -57,10 +109,13 @@ def control(data):
 	command.steering_angle = angle
 
 	# TODO: Make sure the velocity is within bounds [0,100]
-	command.speed = vel_input
+	command.speed = vel
 
 	# Move the car autonomously
 	command_pub.publish(command)
+
+	arrow_marker = create_steering_arrow(0, 0, 0, angle * math.pi / 180)
+	marker_pub.publish(arrow_marker)
 
 if __name__ == '__main__':
 
@@ -69,10 +124,13 @@ if __name__ == '__main__':
 	global kd
 	global ki
 	global vel_input
-	kp = input("Enter Kp Value: ")
-	kd = input("Enter Kd Value: ")
-	ki = input("Enter Ki Value: ")
-	vel_input = 10
+        kp = -50
+        kd = -200
+        vel_input = 35
+	#kp = input("Enter Kp Value: ")
+	#kd = input("Enter Kd Value: ")
+	#ki = input("Enter Ki Value: ")
+	#vel_input = input("Enter velocity: ")
 	rospy.init_node('pid_controller', anonymous=True)
     # subscribe to the error topic
 	rospy.Subscriber("error", pid_input, control)

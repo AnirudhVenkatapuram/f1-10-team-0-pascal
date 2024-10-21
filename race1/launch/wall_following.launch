@@ -1,7 +1,0 @@
-<launch>
-    <include file="move_base/path/move_base.launch">
-        <arg name="listen_offboard" value="true" />
-    </include> 
-    <node pkg="race" name="control" type="control.py" />
-    <node pkg="race" name="dist_finder" type="dist_finder.py" />
-</launch>
