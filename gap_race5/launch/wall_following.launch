@@ -1,0 +1,7 @@
+<launch>
+    <include file="$(find move_base)/launch/move_base.launch">
+        <arg name="listen_offboard" value="true" />
+    </include> 
+    <node pkg="race" name="control" type="control.py" output="screen" />
+    <node pkg="race" name="dist_finder" type="dist_finder.py" />
+</launch>
