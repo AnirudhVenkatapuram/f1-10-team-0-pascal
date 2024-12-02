@@ -1,0 +1,4 @@
+<launch>
+    <node pkg="f1tenth_purepursuit" name="car_0" type="pure_pursuit.py" output="screen" args="car_0 raceline" />
+    <node pkg="rviz" name="rviz" type="rviz" args="-d /home/nvidia/catkin_ws/src/f1tenth_purepursuit/config/slam.rviz" />
+</launch>
