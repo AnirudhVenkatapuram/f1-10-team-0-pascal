@@ -1,0 +1,5 @@
+<launch>
+    <node pkg="move_base" name="car_0" type="move_base.py" output="screen"/>
+    <node pkg="f1tenth_purepursuit" name="car_0_pure" type="pure_pursuit.py"/>
+    <node pkg="particle_filter" name="slam.launch" type="slam.launch"/>
+</launch>
